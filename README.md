@@ -8,7 +8,7 @@ Java port of the [pymorphy2](https://github.com/kmike/pymorphy2)
 Clone project:
 
 ```sh
-git clone https://github.com/anti-social/jmorphy2
+git clone git@github.com:KazanExpress/jmorphy2.git
 cd jmorphy2
 ```
 
@@ -16,6 +16,11 @@ Compile project, build jars and run tests:
 
 ```
 ./gradlew build
+```
+
+If You got error in installing plugin build with clean:
+```
+./gradlew clean assemble -Dbuild.snapshot=false
 ```
 
 ## Elasticsearch plugin
@@ -38,7 +43,7 @@ ${es_home}/bin/elasticsearch-plugin install "https://github.com/anti-social/jmor
 
 ### Building plugin
 
-Default elasticsearch version against which plugin is built is `7.14.2`
+Default elasticsearch version against which plugin is built is `8.6.2`
 
 To build for specific elastisearch version run build as:
 
@@ -46,7 +51,7 @@ To build for specific elastisearch version run build as:
 ./gradlew assemble -PesVersion=7.13.4
 ```
 
-Supported elasticsearch versions: `6.6.x`, `6.7.x`, `6.8.x`, `7.0.x`, `7.1.x`, `7.2.x`, `7.3.x`, `7.4.x`, `7.5.x`, `7.6.x`, `7.7.x`, `7.8.x`, `7.9.x`, `7.10.x`, `7.11.x`, `7.12.x`, `7.13.x`, `7.14.x`
+Supported elasticsearch versions: `6.6.x`, `6.7.x`, `6.8.x`, `7.0.x`, `7.1.x`, `7.2.x`, `7.3.x`, `7.4.x`, `7.5.x`, `7.6.x`, `7.7.x`, `7.8.x`, `7.9.x`, `7.10.x`, `7.11.x`, `7.12.x`, `7.13.x`, `7.14.x`, `8.6.x`
 
 For older elasticsearch version use specific branches:
 
