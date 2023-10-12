@@ -1,146 +1,45 @@
-![Java CI](https://github.com/anti-social/jmorphy2/workflows/Java%20CI/badge.svg)
-[![Appveyor status](https://ci.appveyor.com/api/projects/status/x9df34q1er8r5kc0/branch/master?svg=true)](https://ci.appveyor.com/project/anti-social/jmorphy2/branch/master)
+# Обновление плагина до нужной версии ElasticSearch
+## Ставим зависимости 
+Инструкция написана для сборки под Mac OS на Apple Silicon.
+Для начала установим нужную версию Java. Версию нужно выбрать такую, чтоб соответствовала трем матрицам.
+1. [Матрица ElasticSearch](https://www.elastic.co/support/matrix). Здесь смотрим на нужную версию ElasticSearch и матрицу Product and JVM, например 8.10.* поддерживает Java 17, 20 и 21.
+2. [Матрица Gradle](https://docs.gradle.org/current/userguide/compatibility.html). Здесь смотрим на версии Java и Kotlin, которые поддерживаются Gradle. На текущий момент доступны версии с 8 по 20, устанавливаем Java 17 так как это LTS версия.
 
-# Jmorphy2
+Устанавливаем выбранную версию Java.
+`brew install openjdk@17`
+Теперь можно установить Gradle и Kotlin.
+`brew install gradle`
+`brew install kotlin`
+## Экспортируем нужную версию Java для сборки
+В папке проекта перед манипуляциями с Gradle выполним команду:
+`export JAVA_HOME=/opt/homebrew/opt/openjdk@17/`
+## Собираем Gradle Wrapper (опционально)
+В папке проекта нужно запустить команду:
+`gradle wrapper`
 
-Java port of the [pymorphy2](https://github.com/kmike/pymorphy2)
+После выполнения в проекте обновятся файлы gradlew, gradlew.bat и папка gradle/wrapper. Этот пункт опциональный, так как можно попробовать запустить уже существующие скрипты.
+## Cобираем плагин под нужную версию ElasticSearch
+Поднимаем версию эластика в файле es.version и версию сборки плагина в project.version.
 
-Clone project:
+Для окончательной сборки запускаем следующую команду:
+`./gradlew assemble -PesVersion=<ВЕРСИЯ_ЭЛАСТИКА>`
 
-```sh
-git clone git@github.com:KazanExpress/jmorphy2.git
-cd jmorphy2
-```
+Собранный плагин появится по пути:
+`jmorphy2-elasticsearch/build/distributions/analysis-jmorphy2.*.zip`
+  
+Создаем коммит с изменениями, выпускаем релиз с файлом плагина.
+## Траблшутинг
+При возникновении проблем можно добавить флаг --info при сборке gradle wrapper и самого плагина. 
 
-Compile project, build jars and run tests:
+Основные проблемы возникают на этапе сборки, если в коде не было ломающих изменений, при поиске ошибок нужно смотреть на файлы build.gradle.kts в директориях buildSrc и jmorphy2-elasticsearch.
 
-```
-./gradlew build
-```
+Плагины сборки иногда требуют обновления до новых версий.
+## Известные проблемы
 
-If You got error in installing plugin build with clean:
-```
-./gradlew clean assemble -Dbuild.snapshot=false
-```
+При обновлении до новых версий плагины сборки могут менять название. Так nebula.ospackage  превратился в com.netflix.nebula.ospackage. В таком случае при сборке возникнет ошибка unknown plugin id, решается чтением релизов в поисках breaking changes. 
 
-## Elasticsearch plugin
+Kotlin может ругаться на несовместимость с версией Java, тогда нужно явно указать нужную версию туллчейна в buildSrc/build.gradle.kts.
 
-### Plugin installation
-
-- From a debian package:
-
-```shell
-curl -SLO https://github.com/anti-social/jmorphy2/releases/download/v0.2.3-es7.14.2/elasticsearch-analysis-jmorphy2-plugin_0.2.3-es7.14.2_all.deb
-dpkg -i elasticsearch-analysis-jmorphy2-plugin_0.2.3-es7.14.2_all.deb
-```
-
-- Using `elasticsearch-plugin` command:
-```shell
-# Specify correct path of your Elasticsearch installation
-export es_home=/usr/share/elasticsearch
-${es_home}/bin/elasticsearch-plugin install "https://github.com/anti-social/jmorphy2/releases/download/v0.2.3-es7.14.2/analysis-jmorphy2-0.2.3-es7.14.2.zip"
-```
-
-### Building plugin
-
-Default elasticsearch version against which plugin is built is `8.6.2`
-
-To build for specific elastisearch version run build as:
-
-```shell
-./gradlew assemble -PesVersion=7.13.4
-```
-
-Supported elasticsearch versions: `6.6.x`, `6.7.x`, `6.8.x`, `7.0.x`, `7.1.x`, `7.2.x`, `7.3.x`, `7.4.x`, `7.5.x`, `7.6.x`, `7.7.x`, `7.8.x`, `7.9.x`, `7.10.x`, `7.11.x`, `7.12.x`, `7.13.x`, `7.14.x`, `8.6.x`
-
-For older elasticsearch version use specific branches:
-
-- `es-5.4` for Elasticsearch `5.4.x`, `5.5.x` and `5.6.x`
-- `es-5.1` for Elasticsearch `5.1.x`, `5.2.x` and `5.3.x`
-
-And install assembled plugin:
-
-```shell
-# Specify correct path of your Elasticsearch installation
-export es_home=/usr/share/elasticsearch
-sudo ${es_home}/bin/elasticsearch-plugin install file:jmorphy2-elasticsearch/build/distributions/analysis-jmorphy2-0.2.2-SNAPSHOT-es7.13.2.zip
-```
-
-Or just run elasticsearch inside the container 
-(only works for plugin built for default Elasticsearch version):
-
-```shell
-# build container and run elasticsearch with jmorphy2 plugin
-vagga elastic
-```
-
-Using podman or docker:
-
-```shell
-podman build -t elasticsearch-jmorphy2 -f Dockerfile.elasticsearch .github
-podman run --name elasticsearch-jmorphy2 -p 9200:9200 -e "ES_JAVA_OPTS=-Xmx1g" -e "discovery.type=single-node" elasticsearch-jmorphy2
-```
-
-### Test elasticsearch with jmorphy2 plugin
-
-Create index with specific analyzer and test it:
-
-
-```shell
-curl -X PUT -H 'Content-Type: application/yaml' 'localhost:9200/test_index' -d '---
-settings:
-  index:
-    analysis:
-      filter:
-        delimiter:
-          type: word_delimiter
-          preserve_original: true
-        jmorphy2_russian:
-          type: jmorphy2_stemmer
-          name: ru
-        jmorphy2_ukrainian:
-          type: jmorphy2_stemmer
-          name: uk
-      analyzer:
-        text_ru:
-          tokenizer: standard
-          filter:
-          - delimiter
-          - lowercase
-          - jmorphy2_russian
-        text_uk:
-          tokenizer: standard
-          filter:
-          - delimiter
-          - lowercase
-          - jmorphy2_ukrainian
-'
-
-# Test russian analyzer
-curl -X GET -H 'Content-Type: application/yaml' 'localhost:9200/test_index/_analyze' -d '---
-analyzer: text_ru
-text: Привет, лошарики!
-'
-curl -X GET -H 'Content-Type: application/yaml' 'localhost:9200/test_index/_analyze' -d '---
-analyzer: text_ru
-text: ёж еж ежики
-'
-curl -X GET -H 'Content-Type: application/yaml' 'localhost:9200/test_index/_analyze' -d '---
-analyzer: text_ru
-text: путин
-'
-
-# Test ukrainian analyzer
-curl -X GET -H 'Content-Type: application/yaml' 'localhost:9200/test_index/_analyze' -d '---
-analyzer: text_uk
-text: Пригоди Котигорошка
-'
-curl -X GET -H 'Content-Type: application/yaml' 'localhost:9200/test_index/_analyze' -d '---
-analyzer: text_uk
-text: їжаки
-'
-curl -X GET -H 'Content-Type: application/yaml' 'localhost:9200/test_index/_analyze' -d '---
-analyzer: text_uk
-text: комп\'ютером
-'
-```
+    kotlin {
+	    jvmToolchain(17)
+	}
