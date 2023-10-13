@@ -64,12 +64,12 @@ object Versions {
         EsVersion(7, 13) to "8.8.2",
         EsVersion(7, 14) to "8.9.0",
         EsVersion(8, 6) to "9.4.2",
-        EsVersion(8, 10) to "9.4.2",
+        EsVersion(8, 10) to "9.7.0",
     )
 }
 
 fun Project.getLibraryVersion(): String {
-    return rootProject.file("project.version").readLines().first().toUpperCase().removeSuffix("-SNAPSHOT")
+    return rootProject.file("project.version").readLines().first().uppercase().removeSuffix("-SNAPSHOT")
 }
 
 fun Project.getElasticsearchDefaultVersion(): String {
