@@ -7,13 +7,13 @@ buildscript {
     }
     dependencies {
         classpath("org.elasticsearch.gradle:build-tools:${project.getElasticsearchVersion()}")
-        classpath("com.netflix.nebula:gradle-ospackage-plugin:9.1.1")
+        classpath("com.netflix.nebula:gradle-ospackage-plugin:11.5.0")
     }
 }
 
 apply(plugin = "idea")
 apply(plugin = "elasticsearch.esplugin")
-apply(plugin = "nebula.ospackage")
+apply(plugin = "com.netflix.nebula.ospackage")
 
 val pluginName = "analysis-jmorphy2"
 configure<org.elasticsearch.gradle.plugin.PluginPropertiesExtension> {
